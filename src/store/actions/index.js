@@ -1,1 +1,1 @@
-export { addPlace, deletePlace, selectPlace, deselectPlace } from './places';
+export { fetchPlaces, addPlace, updatePlace, deletePlace, selectPlace, deselectPlace } from "./places";

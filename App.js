@@ -1,97 +1,121 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow
- */
-import React from 'react';
-import {View,TextInput,Button,StyleSheet} from 'react-native';
-import PlaceInput from './src/components/PlaceInput/PlaceInput';
-import PlaceList from './src/components/PlaceList/PlaceList';
+import React, { Component } from "react";
+import { StyleSheet, View } from "react-native";
+import { connect } from "react-redux";
+import PlaceInput from "./src/components/PlaceInput/PlaceInput";
+import PlaceList from "./src/components/PlaceList/PlaceList";
+import PlaceDetail from "./src/components/PlaceDetail/PlaceDetail";
+import PlaceEdit from "./src/components/PlaceEdit/PlaceEdit";
 import img1 from './src/assets/img1.jpg';
-import PlaceDetail from './src/components/PlaceDetail/PlaceDetail';
+import axios from 'axios';
 
+import {
+  fetchPlaces,
+  addPlace,
+  updatePlace,
+  deletePlace,
+  selectPlace,
+  deselectPlace
+} from "./src/store/actions/index";
 
-export default class App extends React.Component{
+class App extends Component {
 
   state={
-    places:[]
+    editForm:false,
+    placeName: '',
+    id:''
   }
 
-  placenameChangedHandler = val => {
-    this.setState({
-      placeName: val,
-      selectedPlace:null
-    })
+  componentDidMount(){
+    this.props.onFetchPlaces();
   }
 
-  placeAddedHandler = placeName => {  
-    this.setState(prevState => {
-      return {
-        places:prevState.places.concat({
-          key:Math.random(), name:placeName,image:img1
 
-        })
-      };
-    })
-  }
+  placeAddedHandler = placeName => {
+    this.props.onAddPlace(placeName);
+  };
 
-  placeDeletedHandler = () =>{
-    this.setState(prevState => {
-      return{
-        places: prevState.places.filter(place => {
-          return place.key !== prevState.selectedPlace.key;
-        }),
-
-        selectedPlace:null
-      }
-    });
-  }
+  placeDeletedHandler = id => {
+    this.props.onDeletePlace(id);
+  };
 
   modalClosedHandler = () => {
-    this.setState({
-      selectedPlace:null
-    });
-  }
-  
+    this.props.onDeselectPlace();
+  };
 
-  placeSeletedHandler = key => {
-    this.setState(prevState =>{
-      return{
-        selectedPlace: prevState.places.find(place =>{
-          return place.key === key;
-        })
-      };
+  placeSelectedHandler = id => {
+    this.props.onSelectPlace(id);
+  };
+
+  placeEditHandler = (id,placeName) => {
+    this.setState({
+      editForm:true,
+      placeName:placeName,
+      id:id
     })
   }
 
-  render(){
+  placeUpdateHandler = (id,placeName) => {
+    this.props.onUpdatePlace(id,placeName);
+    this.setState({
+      editForm:false
+    })
+  }
+
+  hideEditform = () => {
+    this.setState({
+      editForm:false
+    })
+  }
+
+  render() {
     return (
       <View style={styles.container}>
-        <PlaceDetail 
-          selectedPlace={this.state.selectedPlace}
-          onItemDeleted={this.placeDeletedHandler} 
-          onModalClosed={this.modalClosedHandler}/>
-        <PlaceInput onPlaceAdded={this.placeAddedHandler}/>
-        <PlaceList 
-          places={this.state.places}
-          onItemSeleted={this.placeSeletedHandler}
+        <PlaceDetail
+          selectedPlace={this.props.selectedPlace}
+          onItemDeleted={this.placeDeletedHandler}
+          onModalClosed={this.modalClosedHandler}
         />
+        <PlaceInput onPlaceAdded={this.placeAddedHandler} />
+        <PlaceList
+          places={this.props.places}
+          onItemSelected={this.placeSelectedHandler}
+
+          editForm={this.placeEditHandler}
+          onItemDeleted={this.placeDeletedHandler}
+        />
+
+        { this.state.editForm? <PlaceEdit id={this.state.id} name={this.state.placeName} onItemUpdate={this.placeUpdateHandler} hideForm={this.hideEditform} /> :null }
       </View>
     );
- }
-};
+  }
+}
 
 const styles = StyleSheet.create({
   container: {
-    flex:1,
-    backgroundColor:"#fff",
-    padding:26,
+    flex: 1,
+    padding: 26,
+    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "flex-start"
   }
-
 });
 
-// export default App;
+const mapStateToProps = state => {
+  return {
+    places: state.places.places,
+    selectedPlace: state.places.selectedPlace
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    onFetchPlaces: () => dispatch(fetchPlaces()),
+    onAddPlace: name => dispatch(addPlace(name)),
+    onUpdatePlace: (id,placeName) => dispatch(updatePlace(id,placeName)),
+    onDeletePlace: id => dispatch(deletePlace(id)),
+    onSelectPlace: id => dispatch(selectPlace(id)),
+    onDeselectPlace: () => dispatch(deselectPlace())
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);

@@ -1,32 +1,40 @@
-import React from 'react';
-import {View,Text,TextInput,Button,StyleSheet, FlatList} from 'react-native';
-import ListItem from '../ListItem/ListItem';
-
+import React from "react";
+import { StyleSheet, FlatList } from "react-native";
+import img1 from '../../assets/img1.jpg';
+import ListItem from "../ListItem/ListItem";
+//  editPageOpen =() => {
+//     // this.props.navigation.navigate("Screen");
+//     alert("hello")
+// }
 
 const placeList = props => {
-    
+ 
 
-	return(
-      <FlatList 
-	      style={styles.listContainer}
-	      data={props.places}
 
-	      renderItem={(info) => (
-			    <ListItem 
-			      placeName={info.item.name}
-			      placeImage={info.item.image} 
-			      onItemPressed={() => props.onItemSeleted(info.item.key)}>
-			    </ListItem>
-
-	      )}
-      />
-		)
+  
+  return (
+    <FlatList
+      keyExtractor={(item, index) => index.toString()}
+      style={styles.listContainer}
+      data={props.places}
+      renderItem={(info) => (
+        <ListItem
+          placeName={info.item.name}
+          placeImage={img1}
+          onItemPressed={() => props.onItemSelected(info.item.id)}
+          onItemDestroy={() => props.onItemDeleted(info.item.id)}
+          
+          editPage={() => props.editForm(info.item.id, info.item.name)}
+        />
+      )}
+    />
+  );
 };
 
 const styles = StyleSheet.create({
-  listContainer:{
-    width:'100%'
+  listContainer: {
+    width: "100%"
   }
-})
+});
 
 export default placeList;
